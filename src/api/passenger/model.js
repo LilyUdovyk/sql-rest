@@ -1,51 +1,59 @@
-const knex = require("knex");
+const knex = require('../../services/knex');
+// const { Model } = require('../../services/models');
 
-module.exports.Passenger = class Passenger {
+class Passenger {
   constructor(enitity) {
     this._entity = enitity;
   }
 
+  static MODEL_NAME = "passengers";
 
-  async create(body) {
-    const createdResult = await knex(Passenger.MODEL_NAME).insert(body);
+  static async createTable() {
+    await knex.schema.createTableIfNotExists(Passenger.MODEL_NAME, function (table) {
+      table.increments();
+      table.string('firstName').notNullable();
+      table.string('lastName').notNullable();
+      table.string('country').notNullable();
+      table.integer('flights').unsigned().notNullable();
+      table.foreign('flights').references('flightId').inTable('passengers_flights');
+      table.timestamps(true, true);
+    });
+  };
 
-    if (createdResult) {
-      return createdResult
-    }
-
-    return null
-  }
-
-  async save(fields) {
-    // const updatedResult = await knex(Passenger.MODEL_NAME).where("id", "=", this._entity.id).update(fields);
-    const updatedResult = await knex(Passenger.MODEL_NAME).where('id', this._entity.id).update(fields);
-
-    if (updatedResult) {
-      return updatedResult
-    }
-
-    return Passenger.findById(this._entity.id);
-  }
-
-  static MODEL_NAME = "passenger";
-
+  static async findAll() {
+    const result = await knex.select("*").from(Passenger.MODEL_NAME);
+    return result.map((el) => new Passenger(el));
+  };
 
   static async findById(id) {
     return knex(Passenger.MODEL_NAME).where('id', id);
-  }
+  };
 
-  static async findAll() {
-    const result = await knex.select("firstName").from(Passenger.MODEL_NAME);
-    // const result = await knex(Passenger.MODEL_NAME);
-    // [{ id: 1, firstName: 'User }]
-    return result.map((el) => new Passenger(el));
-  }
+  static async create(body) {
+    const createdResult = await knex(Passenger.MODEL_NAME).insert(body);
+
+    if (createdResult) {
+      return Passenger.findById(createdResult[0]);
+    };
+
+    return null
+  };
+
+  static async updateById(id, fields) {
+    const updatedResult = await knex(Passenger.MODEL_NAME).where('id', id).update(fields);
+
+    if (updatedResult) {
+      return Passenger.findById(id);
+    };
+
+    return Passenger.findById(this._entity.id);
+  };
+
+  static async delete(id) {
+    return await knex(Passenger.MODEL_NAME).where('id', id).del();
+  };
 };
 
-// const MODEL_NAME = 'passenger';
+module.exports.Passenger = Passenger;
 
-// module.exports.Passenger = {
-//   updateById({ id, body }) {
-//     return knex(MODEL_NAME).where("id", "=", id).update(body);
-//   }
-// }
+Passenger.createTable();

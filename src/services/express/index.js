@@ -5,7 +5,6 @@ const morgan = require( 'morgan');
 const bodyParser = require( 'body-parser');
 
 module.exports = (apiRoot, routes) => {
-  console.log("routes", routes)
   const app = express();
 
   app.use(cors());

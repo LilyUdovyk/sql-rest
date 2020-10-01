@@ -1,4 +1,4 @@
-const { success, notFound } = require('../../services/response/');
+const { success, notFound } = require('../../services/response');
 const { Passenger }  = require('./model');
 
 module.exports.index = ({ body }, res, next) =>
