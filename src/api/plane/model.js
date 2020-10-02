@@ -1,56 +1,87 @@
 const knex = require('../../services/knex');
 // const { Model } = require('../../services/models');
+// const { Plane } = require('../plane');
+
+const { Flight } = require('../flight/model');
 
 class Plane {
   constructor(enitity) {
     this._entity = enitity;
   }
 
-  static MODEL_NAME = "planes";
+  static TABLE_NAME = "planes";
 
   static async createTable() {
-    await knex.schema.createTableIfNotExists(Plane.MODEL_NAME, function (table) {
-      table.increments();
+    const hasTable = await knex.schema.hasTable(Plane.TABLE_NAME);
+
+    if (hasTable) return;
+
+    await knex.schema.createTable(Plane.TABLE_NAME, function (table) {
+      table.increments('id').primary();
       table.string('name').notNullable();
       table.string('model').notNullable();
-      // table.integer('flights').unsigned().notNullable();
-      // table.foreign('flights').references('flightId').inTable('flights');
       table.timestamps(true, true);
     });
   };
 
+  virtuals = {
+    getFlights: () => knex(Flight.TABLE_NAME).where('plane', this._entity.id),
+  };
+
+  static view (flag) {
+    const baseView = {
+      id: this._entity.id,
+      name: this._entity.name,
+      model: this._entity.model,
+      flights: this.virtuals.getFlights()
+    };
+    
+    switch (flag) {
+      case 'full': {
+        return {
+          ...baseView,
+        }
+      }
+      default: {
+        return baseView;
+      }
+    };
+  };
+
   static async findAll() {
-    const result = await knex.select("*").from(Plane.MODEL_NAME);
+    const result = await knex.select("*").from(Plane.TABLE_NAME);
     return result.map((el) => new Plane(el));
   };
 
   static async findById(id) {
-    return knex(Plane.MODEL_NAME).where('id', id);
+    const result = await knex(Plane.TABLE_NAME).where('id', id);
+    return new Plane(result);
   };
 
   static async create(body) {
-    const createdResult = await knex(Plane.MODEL_NAME).insert(body);
+    const createdResult = await knex(Plane.TABLE_NAME).insert(body);
 
     if (createdResult) {
-      return Plane.findById(createdResult[0]);
+      return await Plane.findById(createdResult[0]);
     };
 
     return null
   };
 
   static async updateById(id, fields) {
-    const updatedResult = await knex(Plane.MODEL_NAME).where('id', id).update(fields);
+    const updatedResult = await knex(Plane.TABLE_NAME).where('id', id).update(fields);
 
     if (updatedResult) {
-      return Plane.findById(id);
+      return await Plane.findById(id);
     };
 
     return Plane.findById(this._entity.id);
   };
 
   static async delete(id) {
-    return await knex(Plane.MODEL_NAME).where('id', id).del();
+    return await knex(Plane.TABLE_NAME).where('id', id).del();
   };
+  
 };
 
 module.exports.Plane = Plane;

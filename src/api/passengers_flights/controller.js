@@ -1,30 +1,30 @@
 const { success, notFound } = require('../../services/response');
-const { Passenger }  = require('./model');
+const { PassengersFlights }  = require('./model');
 
 module.exports.index = ({ body }, res, next) =>
-  Passenger.findAll()
+  PassengersFlights.findAll()
     .then(success(res))
     .catch(next)
 
 module.exports.show = ({ params }, res, next) =>
-  Passenger.findById(params.id)
+  PassengersFlights.findById(params.id)
     .then(notFound(res))
     .then(success(res))
     .catch(next)
 
 module.exports.create = ({ body }, res, next) =>
-  Passenger.create(body)
+  PassengersFlights.create(body)
     .then(success(res, 201))
     .catch(next)
 
 module.exports.update = ({ body, params, user }, res, next) =>
-  Passenger.updateById(params.id, body)
+  PassengersFlights.updateById(params.id, body)
     .then(notFound(res))
     .then(success(res))
     .catch(next)
 
 module.exports.destroy = ({ params }, res, next) =>
-  Passenger.delete(params.id)
+  PassengersFlights.delete(params.id)
     .then(notFound(res))
     .then(success(res, 204))
     .catch(next)

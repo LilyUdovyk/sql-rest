@@ -3,23 +3,31 @@ const { Plane }  = require('./model');
 
 module.exports.index = ({ body }, res, next) =>
   Plane.findAll()
+    .then(notFound(res))
+    .then((planes) => {
+      return planes.map((plane) => plane.view('full'))
+    })
     .then(success(res))
     .catch(next)
 
 module.exports.show = ({ params }, res, next) =>
   Plane.findById(params.id)
     .then(notFound(res))
+    .then((plane) => plane ? plane.view('full'): null)
     .then(success(res))
     .catch(next)
 
 module.exports.create = ({ body }, res, next) =>
   Plane.create(body)
+    .then(notFound(res))
+    .then((plane) => plane ? plane.view(true) : null)
     .then(success(res, 201))
     .catch(next)
 
 module.exports.update = ({ body, params, user }, res, next) =>
   Plane.updateById(params.id, body)
     .then(notFound(res))
+    .then((plane) => plane ? plane.view(true) : null)
     .then(success(res))
     .catch(next)
 
