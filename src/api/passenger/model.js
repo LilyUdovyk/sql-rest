@@ -54,9 +54,11 @@ class Passenger extends Model {
 
   static async updateById(id, fields) {
     if (typeof fields['flight'] !== "undefined") {
-      const isFlight = await knex(PassengersFlights.TABLE_NAME).where({ passengerId: id, flightId: fields['flight'] })
+      const isFlight = await knex(PassengersFlights.TABLE_NAME)
+        .where({ passengerId: id, flightId: fields['flight'] })
       if (!isFlight.length) {
-        await knex(PassengersFlights.TABLE_NAME).insert({passengerId: id, flightId: fields['flight']});
+        await knex(PassengersFlights.TABLE_NAME)
+          .insert({passengerId: id, flightId: fields['flight']});
       }
       delete fields['flight']
     }
@@ -68,6 +70,11 @@ class Passenger extends Model {
     };
 
     return Passenger.findById(this._entity.id);
+  };
+
+  static async delete(id) {
+    await knex(PassengersFlights.TABLE_NAME).where('passengerId', id).del()
+    return await knex(Passenger.TABLE_NAME).where('id', id).del();
   };
 
 };

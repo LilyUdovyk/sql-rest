@@ -50,6 +50,12 @@ class Flight extends Model {
       }
     };
   };
+
+  static async delete(id) {
+    await knex(PassengersFlights.TABLE_NAME).where('flightId', id).del()
+    return await knex(Flight.TABLE_NAME).where('id', id).del();
+  };
+
 };
 
 module.exports.Flight = Flight;
