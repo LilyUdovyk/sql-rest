@@ -23,10 +23,10 @@ class Plane extends Model {
     });
   };
 
-  virtuals = {
+  methods = {
     getFlights: () => knex(Flight.TABLE_NAME).where('plane', this._entity.id),
-    getFlightsAmount: () => {
-      const flights = this.virtuals.getFlights();
+    getFlightsAmount: async () => {
+      const flights = await this.methods.getFlights();
       return flights.length ? flights.length : 0
     }
   };
@@ -36,14 +36,14 @@ class Plane extends Model {
       id: this._entity.id,
       name: this._entity.name,
       model: this._entity.model,
-      flights: await this.virtuals.getFlights()
+      flights: await this.methods.getFlights()
     };
     
     switch (flag) {
       case 'full': {
         return {
           ...baseView,
-          flightsAmount: await this.virtuals.getFlightsAmount(),
+          flightsAmount: await this.methods.getFlightsAmount(),
           created_at: this._entity.created_at,
           updated_at: this._entity.updated_at
         }

@@ -24,24 +24,23 @@ class Passenger extends Model {
       table.timestamps(true, true);
     });
   };
-
-  virtuals = {
-    getFullName: () => this._entity.firstName + ' ' + this._entity.lastName,
+  
+  methods = {
     getFlights: () => knex.select("flightId").from(PassengersFlights.TABLE_NAME).where('passengerId', this._entity.id)
-  };
+  }
 
   async view (flag) {
     const baseView = {
       id: this._entity.id,
-      fullName: this.virtuals.getFullName(),
+      fullName: this.fullName,
       country: this._entity.country,
-      flights: await this.virtuals.getFlights()
     };
     
     switch (flag) {
       case 'full': {
         return {
           ...baseView,
+          flights: await this.methods.getFlights(),
           created_at: this._entity.created_at,
           updated_at: this._entity.updated_at
         }
@@ -78,6 +77,17 @@ class Passenger extends Model {
   };
 
 };
+
+Object.defineProperty(Passenger.prototype, 'fullName', {
+  get: function () { 
+    return `${this._entity.firstName} ${this._entity.lastName}` 
+  },
+  set: function (fullName) {
+    let split = fullName.split(' ');
+    this._entity.firstName = split[0];
+    this._entity.lastName = split[1];
+  }
+});
 
 module.exports.Passenger = Passenger;
 

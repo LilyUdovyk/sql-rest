@@ -25,7 +25,7 @@ class Flight extends Model {
     });
   };
 
-  virtuals = {
+  methods = {
     getPassengers: () => knex.select("passengerId").from(PassengersFlights.TABLE_NAME).where('flightId', this._entity.id)
   };
 
@@ -34,13 +34,13 @@ class Flight extends Model {
       id: this._entity.id,
       plane: this._entity.plane,
       time: this._entity.time,
-      passengers: await this.virtuals.getPassengers()
     };
     
     switch (flag) {
       case 'full': {
         return {
           ...baseView,
+          passengers: await this.methods.getPassengers(),
           created_at: this._entity.created_at,
           updated_at: this._entity.updated_at
         }
