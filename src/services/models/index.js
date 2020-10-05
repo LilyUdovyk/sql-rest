@@ -5,40 +5,42 @@ class Model {
     this._entity = enitity;
   }
 
-  static MODEL_NAME;
+  static TABLE_NAME;
 
   static async findAll() {
-    const result = await knex.select("*").from(Model.MODEL_NAME);
-    return result.map((el) => new Model(el));
+    const result = await knex.select("*").from(this.TABLE_NAME);
+    return result.map((el) => new this(el));
   };
 
   static async findById(id) {
-    return knex(Model.MODEL_NAME).where('id', id);
+    const result = await knex(this.TABLE_NAME).where('id', id);
+    return result.length ? new this(result[0]) : null;
   };
 
   static async create(body) {
-    const createdResult = await knex(Model.MODEL_NAME).insert(body);
+    const createdResult = await knex(this.TABLE_NAME).insert(body);
 
     if (createdResult) {
-      return Model.findById(createdResult[0]);
+      return await this.findById(createdResult[0]);
     };
 
     return null
   };
 
   static async updateById(id, fields) {
-    const updatedResult = await knex(Model.MODEL_NAME).where('id', id).update(fields);
+    const updatedResult = await knex(this.TABLE_NAME).where('id', id).update(fields);
 
     if (updatedResult) {
-      return Model.findById(id);
+      return await this.findById(id);
     };
 
-    return Model.findById(this._entity.id);
+    return this.findById(this._entity.id);
   };
 
   static async delete(id) {
-    return await knex(Model.MODEL_NAME).where('id', id).del();
+    return await knex(this.TABLE_NAME).where('id', id).del();
   };
+
 };
 
 module.exports.Model = Model;

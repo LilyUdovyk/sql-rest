@@ -1,9 +1,10 @@
 const knex = require('../../services/knex');
-// const { Model } = require('../../services/models');
+const { Model } = require('../../services/models');
+const { PassengersFlights } = require('../passengers_flights/model');
 
-
-class Flight {
+class Flight extends Model {
   constructor(enitity) {
+    super()
     this._entity = enitity;
   }
 
@@ -24,40 +25,31 @@ class Flight {
     });
   };
 
-  static async findAll() {
-    const result = await knex.select("*").from(Flight.TABLE_NAME);
-    return result.map((el) => new Flight(el));
+  virtuals = {
+    getPassengers: () => knex.select("passengerId").from(PassengersFlights.TABLE_NAME).where('flightId', this._entity.id)
   };
 
-  static async findById(id) {
-    const result = await knex(Flight.TABLE_NAME).where('id', id);
-    return new Flight(result)._entity;
-  };
-
-  static async create(body) {
-    const createdResult = await knex(Flight.TABLE_NAME).insert(body);
-
-    if (createdResult) {
-      return await Flight.findById(createdResult[0]);
+  async view (flag) {
+    const baseView = {
+      id: this._entity.id,
+      plane: this._entity.plane,
+      time: this._entity.time,
+      passengers: await this.virtuals.getPassengers()
     };
-
-    return null
-  };
-
-  static async updateById(id, fields) {
-    const updatedResult = await knex(Flight.TABLE_NAME).where('id', id).update(fields);
-
-    if (updatedResult) {
-      return await Flight.findById(id);
+    
+    switch (flag) {
+      case 'full': {
+        return {
+          ...baseView,
+          created_at: this._entity.created_at,
+          updated_at: this._entity.updated_at
+        }
+      }
+      default: {
+        return baseView;
+      }
     };
-
-    return Flight.findById(this._entity.id);
   };
-
-  static async delete(id) {
-    return await knex(Flight.TABLE_NAME).where('id', id).del();
-  };
-
 };
 
 module.exports.Flight = Flight;
